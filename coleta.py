@@ -29,6 +29,14 @@ def main():
     html = baixar(PAGINA).decode("utf-8", "replace")
     urls = sorted(set(RE_LINK.findall(html)))
     print(f"{len(urls)} arquivo(s) no índice do IMA")
+    # Trava: 0 links = a página do IMA mudou de layout (ou esvaziou). Falhar o
+    # job DE PROPÓSITO (fica vermelho e avisa) e NÃO escrever um index.json
+    # vazio — o índice bom de ontem fica preservado, o app segue com o que tem.
+    if not urls:
+        raise SystemExit(
+            "ERRO: nenhum link de PTV encontrado na página do IMA — o layout "
+            "pode ter mudado. Job falhado de propósito para avisar; o "
+            "index.json anterior (bom) foi preservado, sem sobrescrever.")
     idx = {}
     for u in urls:
         m = re.search(r"/(\d{5})/", u)
@@ -43,6 +51,12 @@ def main():
             f.write(dados)
         idx[nome] = hashlib.sha256(dados).hexdigest()
         print(f"  baixado {nome} ({len(dados)} bytes)")
+    # Mesma trava se, apesar de haver links, NENHUM arquivo baixou (IMA instável
+    # na hora): não sobrescreve o índice bom com vazio; falha para retentar.
+    if not idx:
+        raise SystemExit(
+            "ERRO: havia %d link(s) mas nenhum arquivo baixou — index.json bom "
+            "preservado, sem sobrescrever." % len(urls))
     with open(os.path.join("dados", "index.json"), "w", encoding="utf-8") as f:
         json.dump(dict(sorted(idx.items())), f, ensure_ascii=False, indent=0)
     print(f"TOTAL: {len(idx)} arquivos salvos em dados/")
