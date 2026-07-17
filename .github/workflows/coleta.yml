@@ -1,0 +1,35 @@
+name: Coleta IMA
+
+on:
+  schedule:
+    - cron: "0 10 * * *"      # 07h de Brasília (10h UTC), todo dia
+  workflow_dispatch: {}        # botão para rodar manualmente (teste)
+
+permissions:
+  contents: write
+
+concurrency:
+  group: coleta
+  cancel-in-progress: false
+
+jobs:
+  coleta:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Baixar arquivos do IMA
+        run: python coleta.py
+      - name: Commitar os dados
+        run: |
+          git config user.name "coleta-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add dados
+          if git diff --staged --quiet; then
+            echo "Sem mudanças — nada a commitar."
+          else
+            git commit -m "coleta IMA $(date -u +%Y-%m-%d)"
+            git push
+          fi
