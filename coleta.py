@@ -1,7 +1,12 @@
 """Coleta os arquivos públicos de PTV de banana do portal do IMA e salva em
 dados/. Roda no GitHub Actions (que alcança o IMA); o app na VPS depois baixa
 esses arquivos do GitHub (que ele alcança) e importa. É a 'ponte' que a VPS
-não consegue fazer direto (o IMA bloqueia o IP do datacenter da VPS)."""
+não consegue fazer direto (o IMA bloqueia o IP do datacenter da VPS).
+
+O índice dados/index.json é um objeto {nome: hash_sha256} — o app usa o hash
+para baixar/reler SÓ o que mudou (pula os arquivos de hash igual ao já
+importado)."""
+import hashlib
 import json
 import os
 import re
@@ -24,7 +29,7 @@ def main():
     html = baixar(PAGINA).decode("utf-8", "replace")
     urls = sorted(set(RE_LINK.findall(html)))
     print(f"{len(urls)} arquivo(s) no índice do IMA")
-    idx = []
+    idx = {}
     for u in urls:
         m = re.search(r"/(\d{5})/", u)
         nome = (f"{m.group(1)}.{u.rsplit('.', 1)[-1]}" if m
@@ -36,10 +41,10 @@ def main():
             continue
         with open(os.path.join("dados", nome), "wb") as f:
             f.write(dados)
-        idx.append(nome)
+        idx[nome] = hashlib.sha256(dados).hexdigest()
         print(f"  baixado {nome} ({len(dados)} bytes)")
     with open(os.path.join("dados", "index.json"), "w", encoding="utf-8") as f:
-        json.dump(sorted(idx), f, ensure_ascii=False, indent=0)
+        json.dump(dict(sorted(idx.items())), f, ensure_ascii=False, indent=0)
     print(f"TOTAL: {len(idx)} arquivos salvos em dados/")
 
 
