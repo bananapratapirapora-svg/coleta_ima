@@ -2,7 +2,7 @@ name: Coleta IMA
 
 on:
   schedule:
-    - cron: "0 10 * * *"      # 07h de Brasília (10h UTC), todo dia
+    - cron: "30 12 * * *"     # 09h30 de Brasília (12h30 UTC), todo dia
   workflow_dispatch: {}        # botão para rodar manualmente (teste)
 
 permissions:

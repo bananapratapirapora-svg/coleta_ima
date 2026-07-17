@@ -4,7 +4,7 @@ O servidor do sistema (VPS) **não consegue** alcançar o site do IMA (o firewal
 do IMA derruba o IP do datacenter). Este repositório resolve isso via
 **GitHub Actions**, que roda na rede do GitHub e alcança o IMA:
 
-1. O workflow `.github/workflows/coleta.yml` roda todo dia (07h de Brasília),
+1. O workflow `.github/workflows/coleta.yml` roda todo dia (09h30 de Brasília),
    executa `coleta.py`, baixa os arquivos públicos de PTV de banana do IMA e
    os commita em `dados/` (com um `dados/index.json`).
 2. O app do Preço Realizado baixa esses arquivos **do GitHub** (que ele
