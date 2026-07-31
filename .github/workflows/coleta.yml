@@ -2,7 +2,14 @@ name: Coleta IMA
 
 on:
   schedule:
-    - cron: "30 12 * * *"     # 09h30 de Brasília (12h30 UTC), todo dia
+    # O IMA publica 2x/semana (segunda e quinta, de manhã — levantamento de
+    # 31/07/2026 nos carimbos internos dos .xlsx) e o GitHub costuma atrasar
+    # o cron em ~4-5h. Três horários NOMINAIS para as execuções reais
+    # aterrissarem de manhã cedo, fim da manhã e início da tarde de Brasília
+    # (o app verifica a ponte às 10h30, 15h15 e 18h15):
+    - cron: "0 6 * * *"       # 03h de Brasília (nominal) — roda ~07h-08h30
+    - cron: "0 9 * * *"       # 06h de Brasília (nominal) — roda ~10h-11h30
+    - cron: "30 12 * * *"     # 09h30 de Brasília (nominal) — roda ~14h-15h30
   workflow_dispatch: {}        # botão para rodar manualmente (teste)
 
 permissions:
